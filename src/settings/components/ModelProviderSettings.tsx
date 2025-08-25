@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { t } from '../../lang/helpers';
+
 import InfioPlugin from "../../main";
 import { ApiProvider } from '../../types/llm/model';
 import { InfioSettings } from '../../types/settings';
@@ -10,7 +11,7 @@ import {
 } from '../../utils/api';
 import { getProviderApiUrl } from '../../utils/provider-urls';
 
-import { ApiKeyComponent, CustomUrlComponent } from './FormComponents';
+import { ApiKeyComponent, CustomUrlComponent, TextComponent } from './FormComponents';
 import { ComboBoxComponent } from './ProviderModelsPicker';
 
 type CustomProviderSettingsProps = {
@@ -187,6 +188,24 @@ const CustomProviderSettings: React.FC<CustomProviderSettingsProps> = ({ plugin,
 			[providerKey]: {
 				...providerSettings,
 				baseUrl: value
+			}
+		});
+	};
+
+	// 直接保存嵌入维度设置
+	const updateProviderEmbeddingDimensions = (provider: ApiProvider, value: string) => {
+		const providerKey = getProviderSettingKey(provider);
+		const providerSettings = settings[providerKey];
+		
+		// 将字符串转换为数字，并确保在有效范围内（只保留最小值1的限制）
+		const numValue = parseInt(value, 10);
+		const validValue = isNaN(numValue) ? 768 : Math.max(1, numValue);
+
+		handleSettingsUpdate({
+			...settings,
+			[providerKey]: {
+				...providerSettings,
+				embeddingDimensions: validValue
 			}
 		});
 	};
@@ -549,6 +568,7 @@ const CustomProviderSettings: React.FC<CustomProviderSettingsProps> = ({ plugin,
 						modelId={settings.embeddingModelId}
 						isEmbedding={true}
 						updateModel={updateEmbeddingModelId}
+						onUpdateEmbeddingDimensions={updateProviderEmbeddingDimensions}
 					/>
 				</div>
 			</div>
